@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+    
+
+
+{% block content %}
+
+  {% if notfound %}
+    <h3>{{ notfound }}</h3>
+
+  {% else %}
+    {% if crypto.Response %}
+      <h3>El símbolo {{ quote }} no existe, <strong>inténtalo de nuevo!</strong></h3>
+    {% endif %}
+    {% for key,value in crypto.DISPLAY.items %}
+   
+      <div class="jumbotron" style="background-color: rgba(0, 0, 0, 0.05);">
+        <h1 class="display-4">{{ key }}</h1>
+        <strong>Nombre</strong>: {{ key }}<br/>
+        <strong>Precio</strong>: {{ value.USD.PRICE }}<br/>
+        <strong>Alto</strong>: {{ value.USD.HIGHDAY }}<br/>
+        <strong>Bajo</strong>: {{ value.USD.LOWDAY }}<br/>
+        <strong>Capitalización</strong>: {{ value.USD.MKTCAP }}<br/>
+      </div>
+      <br/><br/>
+
+
+    
+       
+    {% endfor %}
+  {% endif %}
+
+<br/><br/>
+
+{% endblock %}
