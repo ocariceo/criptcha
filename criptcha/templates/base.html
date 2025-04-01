@@ -1,114 +1,233 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
-    <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
-
-    <title>Criptcha - Noticias</title>
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome para íconos -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <title>Criptcha - {% block title %}Noticias{% endblock %}</title>
+    
+    <style>
+      :root {
+        --primary-color: #6c63ff;
+        --secondary-color: #4a4893;
+        --light-color: #f4f7fb;
+        --dark-color: #212529;
+        --accent-color: #ff6384;
+      }
+      
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: var(--light-color);
+        color: #333;
+      }
+      
+      h1, h2, h3, h4, h5, h6, .navbar-brand {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 600;
+      }
+      
+      .navbar {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+      }
+      
+      .card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+      }
+      
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+      }
+      
+      .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+      
+      .btn-primary:hover {
+        background-color: var(--secondary-color);
+        border-color: var(--secondary-color);
+      }
+      
+      .crypto-table {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      
+      .crypto-table thead {
+        background-color: var(--primary-color);
+        color: white;
+      }
+      
+      .jumbotron {
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background-color: white;
+      }
+      
+      .search-form .form-control {
+        border-radius: 20px 0 0 20px;
+        padding-left: 20px;
+      }
+      
+      .search-form .btn {
+        border-radius: 0 20px 20px 0;
+        padding-right: 20px;
+      }
+      
+      .news-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .news-card .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .news-card .btn {
+        margin-top: auto;
+      }
+      
+      footer {
+        margin-top: 3rem;
+      }
+      
+      /* Estilos para el precio positivo/negativo */
+      .price-up {
+        color: #28a745;
+      }
+      
+      .price-down {
+        color: #dc3545;
+      }
+      
+      /* Animación para loading */
+      .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top-color: var(--primary-color);
+        animation: spin 1s ease-in-out infinite;
+      }
+      
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'home' %}">Criptcha Noticias</a>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'home' %}">
+      <i class="fas fa-chart-line me-2"></i>Criptcha
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'prices' %}">Explorar precios</a>
+          <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
+            <i class="fas fa-home me-1"></i> Inicio
+          </a>
         </li>
-        
-        
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/prices/' %}active{% endif %}" href="{% url 'prices' %}">
+            <i class="fas fa-coins me-1"></i> Explorar precios
+          </a>
+        </li>
       </ul>
-      <form class="d-flex" method="POST" action="{% url 'prices'%}">
-      {% csrf_token %}
-        <input class="form-control me-2" type="search" placeholder="Buscar una cripto" aria-label="Search" name="quote">
-        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      <form class="d-flex search-form" method="POST" action="{% url 'prices' %}">
+        {% csrf_token %}
+        <div class="input-group">
+          <input class="form-control" type="search" placeholder="Buscar una cripto..." aria-label="Search" name="quote">
+          <button class="btn btn-light" type="submit"><i class="fas fa-search"></i></button>
+        </div>
       </form>
     </div>
   </div>
 </nav>
     
-    <br/>
-    <div class="container">
-        {% block content %}
-        {% endblock %}
-    </div>
-
-    <!-- Optional JavaScript; choose one of the two! -->
-
-    <!-- Option 1: Bootstrap Bundle with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
-
-    <!-- Option 2: Separate Popper and Bootstrap JS -->
-    <!--
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-W8fXfP3gkOKtndU4JGtKDvXbO53Wy8SZCQHczT5FMiiqmQfUpWbYdTil/SxwZgAN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.min.js" integrity="sha384-skAcpIdS7UcVUC05LJ9Dxay8AXcDYfBJqt1CJ85S/CFujBsIzCIv+l9liuYLaMQ/" crossorigin="anonymous"></script>
-    -->
-  </body>
-
-  <!-- Footer -->
-<footer class="text-center text-lg-start bg-light text-muted">
-  <!-- Section: Social media -->
-  <section
-    class="d-flex justify-content-center justify-content-lg-between p-4 border-bottom"
-  >
-   
-    <!-- Right -->
-  </section>
-  <!-- Section: Social media -->
-
-  <!-- Section: Links  -->
-  <section class="">
-    <div class="container text-center text-md-start mt-5">
-      <!-- Grid row -->
-      <div class="row mt-3">
-        <!-- Grid column -->
-        <div class="col-md-3 col-lg-4 col-xl-3 mx-auto mb-4">
-          <!-- Content -->
-          <h6 class="text-uppercase fw-bold mb-4">
-            <i class="fas fa-gem me-3"></i>Criptcha Noticias
-          </h6>
-          <p>
-            Sitio de noticias sobre Cripto Monedas y tecnologías de Blockchain. Explora precios y capitalizaciones de las principales Cripto Monedas del mundo.
-            </p>
-        </div>
-        <!-- Grid column -->
-
-        
-        <!-- Grid column -->
-
-        <!-- Grid column -->
-        <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mb-md-0 mb-4">
-          <!-- Links -->
-          <h6 class="text-uppercase fw-bold mb-4">
-            Contact
-          </h6>
-          <p><i class="fas fa-home me-3"></i> Santiago, Chile.</p>
-          <p>
-            <i class="fas fa-envelope me-3"></i>
-            
-          </p>
-          
-        </div>
-        <!-- Grid column -->
-      </div>
-      <!-- Grid row -->
-    </div>
-  </section>
-  <!-- Section: Links  -->
-
-  <!-- Copyright -->
-  <div class="text-center p-4" style="background-color: rgba(0, 0, 0, 0.05);">
-    © 2025 Desarrollado por:
-    <a class="text-reset fw-bold" href="https://kintuai.com/">Kintu</a>
+<main class="py-4">
+  <div class="container">
+    {% block content %}
+    {% endblock %}
   </div>
-  <!-- Copyright -->
+</main>
+
+<footer class="bg-dark text-white py-4">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-4 mb-md-0">
+        <h5 class="mb-3">Criptcha</h5>
+        <p>Sitio de noticias sobre Criptomonedas y tecnologías de Blockchain. Explora precios y capitalizaciones de las principales Criptomonedas del mundo.</p>
+        <div class="social-icons">
+          <a href="#" class="text-white me-2"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-white me-2"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="text-white me-2"><i class="fab fa-telegram"></i></a>
+        </div>
+      </div>
+      <div class="col-md-4 mb-4 mb-md-0">
+        <h5 class="mb-3">Enlaces rápidos</h5>
+        <ul class="list-unstyled">
+          <li><a href="{% url 'home' %}" class="text-decoration-none link-light"><i class="fas fa-chevron-right me-1"></i> Inicio</a></li>
+          <li><a href="{% url 'prices' %}" class="text-decoration-none link-light"><i class="fas fa-chevron-right me-1"></i> Explorar precios</a></li>
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h5 class="mb-3">Contacto</h5>
+        <ul class="list-unstyled">
+          <li><i class="fas fa-map-marker-alt me-2"></i> Santiago, Chile</li>
+          <li><i class="fas fa-envelope me-2"></i> info@criptcha.com</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="my-4">
+    <div class="text-center">
+      <p class="mb-0">© 2025 Desarrollado por <a href="https://kintuai.com/" class="text-white fw-bold">Kintu</a></p>
+    </div>
+  </div>
 </footer>
-<!-- Footer -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.umd.min.js"></script>
+
+<script>
+  // Para animaciones de precio
+  document.addEventListener('DOMContentLoaded', function() {
+    // Buscar elementos con clase price y agregar indicadores según valor
+    document.querySelectorAll('.crypto-price').forEach(function(element) {
+      const priceChange = parseFloat(element.getAttribute('data-change'));
+      if (priceChange > 0) {
+        element.classList.add('price-up');
+        element.innerHTML += ' <i class="fas fa-caret-up"></i>';
+      } else if (priceChange < 0) {
+        element.classList.add('price-down');
+        element.innerHTML += ' <i class="fas fa-caret-down"></i>';
+      }
+    });
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
 </html>
