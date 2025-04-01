@@ -1,34 +1,202 @@
 {% extends 'base.html' %}
-    
 
+{% block title %}Explorar precios{% endblock %}
 
 {% block content %}
+<div class="row mb-4">
+  <div class="col-lg-12">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'home' %}">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Explorar precios</li>
+      </ol>
+    </nav>
+  </div>
+</div>
 
-  {% if notfound %}
-    <h3>{{ notfound }}</h3>
-
-  {% else %}
-    {% if crypto.Response %}
-      <h3>El símbolo {{ quote }} no existe, <strong>inténtalo de nuevo!</strong></h3>
-    {% endif %}
-    {% for key,value in crypto.DISPLAY.items %}
-   
-      <div class="jumbotron" style="background-color: rgba(0, 0, 0, 0.05);">
-        <h1 class="display-4">{{ key }}</h1>
-        <strong>Nombre</strong>: {{ key }}<br/>
-        <strong>Precio</strong>: {{ value.USD.PRICE }}<br/>
-        <strong>Alto</strong>: {{ value.USD.HIGHDAY }}<br/>
-        <strong>Bajo</strong>: {{ value.USD.LOWDAY }}<br/>
-        <strong>Capitalización</strong>: {{ value.USD.MKTCAP }}<br/>
+<div class="row">
+  <div class="col-lg-8 mx-auto">
+    <div class="card mb-4">
+      <div class="card-body">
+        <h4 class="card-title mb-4"><i class="fas fa-search me-2"></i>Buscar criptomoneda</h4>
+        <form method="POST" action="{% url 'prices' %}" class="mb-0">
+          {% csrf_token %}
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-primary text-white">
+              <i class="fas fa-coins"></i>
+            </span>
+            <input type="search" class="form-control" placeholder="Introduce el símbolo (BTC, ETH, XRP...)" name="quote" required>
+            <button class="btn btn-primary" type="submit"><i class="fas fa-search me-2"></i>Buscar</button>
+          </div>
+          <div class="form-text mt-2">Ejemplos: BTC (Bitcoin), ETH (Ethereum), SOL (Solana), DOT (Polkadot)</div>
+        </form>
       </div>
-      <br/><br/>
-
-
+    </div>
     
-       
+    {% if notfound %}
+    <div class="alert alert-info" role="alert">
+      <i class="fas fa-info-circle me-2"></i>{{ notfound }}
+    </div>
+    {% endif %}
+
+    {% if crypto.Response %}
+    <div class="alert alert-warning" role="alert">
+      <i class="fas fa-exclamation-triangle me-2"></i>El símbolo <strong>{{ quote }}</strong> no existe, <strong>inténtalo de nuevo</strong> con un símbolo válido.
+    </div>
+    {% endif %}
+    
+    {% for key,value in crypto.DISPLAY.items %}
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <div class="d-flex align-items-center">
+          <img src="https://www.cryptocompare.com{{ value.USD.IMAGEURL }}" alt="{{ key }}" width="40" height="40" class="me-3">
+          <h3 class="mb-0">{{ key }}</h3>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5 class="mb-0">Precio actual</h5>
+              <h3 class="mb-0 crypto-price" data-change="0">{{ value.USD.PRICE }}</h3>
+            </div>
+            <hr>
+            <div class="d-flex justify-content-between mb-2">
+              <span>24h Alto:</span>
+              <strong>{{ value.USD.HIGHDAY }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>24h Bajo:</span>
+              <strong>{{ value.USD.LOWDAY }}</strong>
+            </div>
+            <div class="d-flex justify-content-between mb-3">
+              <span>Capitalización:</span>
+              <strong>{{ value.USD.MKTCAP }}</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 bg-light rounded h-100">
+              <h5 class="mb-3">Información adicional</h5>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Volumen 24h:</span>
+                <strong>{{ value.USD.VOLUME24HOUR }}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Suministro:</span>
+                <strong>{{ value.USD.SUPPLY }}</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Actualizado:</span>
+                <strong>{{ value.USD.LASTUPDATE }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="mt-4">
+          <h5>Gráfico de precios</h5>
+          <div class="chart-container" style="position: relative; height:300px; width:100%">
+            <canvas id="cryptoChart"></canvas>
+          </div>
+          <div class="text-center text-muted small mt-2">
+            <i class="fas fa-info-circle me-1"></i>Gráfico simulado con fines ilustrativos
+          </div>
+        </div>
+      </div>
+      <div class="card-footer bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <span class="badge bg-dark me-2">Rank: #{{ forloop.counter }}</span>
+          </div>
+          <div>
+            <a href="https://www.cryptocompare.com/coins/{{ key|lower }}/overview/USD" class="btn btn-sm btn-outline-primary" target="_blank">
+              <i class="fas fa-external-link-alt me-1"></i>Más información
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
     {% endfor %}
-  {% endif %}
+  </div>
+</div>
+{% endblock %}
 
-<br/><br/>
-
+{% block extra_js %}
+{% for key,value in crypto.DISPLAY.items %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Datos simulados para el gráfico de ejemplo
+    const ctx = document.getElementById('cryptoChart');
+    
+    if (ctx) {
+      const labels = Array.from({length: 30}, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (29 - i));
+        return d.toLocaleDateString('es-ES', {day: '2-digit', month: '2-digit'});
+      });
+      
+      // Generar datos aleatorios que simulen el movimiento del precio
+      const basePrice = parseFloat('{{ value.USD.PRICE }}'.replace(/[^0-9.-]+/g, ""));
+      const data = [];
+      let currentPrice = basePrice * 0.7;
+      
+      for (let i = 0; i < 30; i++) {
+        // Simular cambios de precio con tendencia alcista
+        const change = (Math.random() - 0.3) * (basePrice * 0.05);
+        currentPrice = Math.max(currentPrice + change, basePrice * 0.5);
+        data.push(currentPrice);
+      }
+      
+      // Asegurarse de que el último punto sea el precio actual
+      data[data.length - 1] = basePrice;
+      
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Precio (USD)',
+            data: data,
+            borderColor: '#6c63ff',
+            backgroundColor: 'rgba(108, 99, 255, 0.1)',
+            borderWidth: 2,
+            pointRadius: 2,
+            pointBackgroundColor: '#6c63ff',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function(context) {
+                  return `$${context.raw.toFixed(2)}`;
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false
+              }
+            },
+            y: {
+              beginAtZero: false
+            }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endfor %}
 {% endblock %}
